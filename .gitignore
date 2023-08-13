@@ -1,0 +1,15 @@
+# cabal
+dist
+dist-*
+cabal.project.local
+cabal.project.local~
+
+# nix
+result
+result-*
+
+# direnv
+.direnv
+
+# .env
+.env

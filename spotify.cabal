@@ -1,0 +1,101 @@
+cabal-version:      2.4
+name:               spotify
+version:            0.1.0.0
+license:            MIT
+copyright:          2022 Joona Piirainen
+maintainer:         joona.piirainen@gmail.com
+author:             Joona Piirainen
+category:           PL
+extra-source-files:
+  LICENSE
+  README.md
+
+common shared
+  ghc-options:
+    -Wall -Wincomplete-record-updates -Wincomplete-uni-patterns
+    -Wmissing-deriving-strategies -Wunused-foralls -Wunused-foralls
+    -fprint-explicit-foralls -fprint-explicit-kinds
+
+  default-extensions:
+    NoStarIsType
+    BangPatterns
+    ConstraintKinds
+    DataKinds
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    DerivingStrategies
+    DerivingVia
+    DuplicateRecordFields
+    EmptyCase
+    EmptyDataDecls
+    EmptyDataDeriving
+    ExistentialQuantification
+    ExplicitForAll
+    FlexibleContexts
+    FlexibleInstances
+    GADTSyntax
+    GeneralisedNewtypeDeriving
+    ImportQualifiedPost
+    KindSignatures
+    LambdaCase
+    MultiParamTypeClasses
+    MultiWayIf
+    NamedFieldPuns
+    NumericUnderscores
+    OverloadedStrings
+    PolyKinds
+    PostfixOperators
+    RankNTypes
+    RecordWildCards
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TupleSections
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+    ViewPatterns
+
+  default-language:   Haskell2010
+
+library
+  import:          shared
+  build-depends:
+    , base  >=4.13.0.0 && <4.18.0.0.0
+    , text
+    , aeson
+    , exceptions
+    , effectful
+    , effectful-th
+    , servant
+    , servant-client
+    , http-client-tls
+    , http-api-data
+    , bytestring
+    , base64-bytestring
+    , xdg-basedir-compliant
+    , dhall
+
+  other-modules:   Paths_spotify
+  hs-source-dirs:  lib
+  exposed-modules: 
+      Spotify
+    , Spotify.AppEnv
+    , Spotify.Config
+    , Spotify.Effect.FileSystem
+    , Spotify.Effect.Spotify
+    , Spotify.Effect.Spotify.Servant
+
+executable spotify
+  import:         shared
+  build-depends:
+    , base     >=4.13.0.0 && <4.18.0.0.0
+    , effectful
+    , spotify
+
+  hs-source-dirs: src
+  main-is:        Main.hs
