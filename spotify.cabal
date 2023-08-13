@@ -85,7 +85,8 @@ library
   exposed-modules: 
       Spotify
     , Spotify.AppEnv
-    , Spotify.Config
+    , Spotify.UserConfig
+    , Spotify.Effect.Config
     , Spotify.Effect.FileSystem
     , Spotify.Effect.Spotify
     , Spotify.Effect.Spotify.Servant

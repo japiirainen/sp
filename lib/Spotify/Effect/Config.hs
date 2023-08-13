@@ -1,10 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Spotify.Config (
-  Config (..),
-  UserConfig (..),
+module Spotify.Effect.Config (
   readConfig,
   runConfigIO,
+  Config (..),
 ) where
 
 import Dhall
@@ -13,14 +12,7 @@ import Effectful.Dispatch.Dynamic
 import Effectful.TH
 
 import Spotify.Effect.FileSystem
-
-data UserConfig = UserConfig
-  { clientId :: Text
-  , clientSecret :: Text
-  }
-  deriving stock (Generic, Show)
-
-instance FromDhall UserConfig
+import Spotify.UserConfig
 
 data Config :: Effect where
   ReadConfig :: Config m UserConfig
