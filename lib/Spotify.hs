@@ -5,14 +5,14 @@ import Effectful.Error.Static (runError)
 import Effectful.Reader.Static (runReader)
 
 import Spotify.AppEnv
-import Spotify.Config
+import Spotify.Config as Config
 import Spotify.Effect.FileSystem
 import Spotify.Effect.Spotify
 
 prog :: (Config :> es, SpotifyAPI :> es) => Eff es TokenResponse
 prog = do
   c <- readConfig
-  let auth = Just $ TokenAuthorization (userClientId c) (userClientSecret c)
+  let auth = Just $ TokenAuthorization (Config.clientId c) (Config.clientSecret c)
   let tokReq =
         TokenRequest
           { grant_type = ClientCredentials

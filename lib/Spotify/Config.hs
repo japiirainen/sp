@@ -15,8 +15,8 @@ import Effectful.TH
 import Spotify.Effect.FileSystem
 
 data UserConfig = UserConfig
-  { userClientId :: Text
-  , userClientSecret :: Text
+  { clientId :: Text
+  , clientSecret :: Text
   }
   deriving stock (Generic, Show)
 
@@ -29,4 +29,6 @@ makeEffect ''Config
 
 runConfigIO :: (IOE :> es, FileSystem :> es) => Eff (Config : es) a -> Eff es a
 runConfigIO = interpret $ \_ -> \case
-  ReadConfig -> readConfigFile "Spotify.dhall" >>= \c -> liftIO (input auto c)
+  ReadConfig -> do
+    fileContents <- readConfigFile "Spotify.dhall"
+    liftIO $ input auto fileContents
