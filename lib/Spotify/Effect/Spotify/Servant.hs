@@ -29,7 +29,7 @@ type TokenRoute =
     :> ReqBody '[FormUrlEncoded] TokenRequest
     :> Post '[JSON] TokenResponse
 
-data Routes route = Routes
+newtype Routes route = Routes
   {token :: route :- TokenRoute}
   deriving stock (Generic)
 

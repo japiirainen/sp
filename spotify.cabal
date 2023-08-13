@@ -65,36 +65,36 @@ common shared
 library
   import:          shared
   build-depends:
-    , base  >=4.13.0.0 && <4.18.0.0.0
-    , text
     , aeson
-    , exceptions
+    , base                   >=4.13.0.0 && <4.18.0.0.0
+    , base64-bytestring
+    , bytestring
+    , dhall
     , effectful
     , effectful-th
+    , exceptions
+    , http-api-data
+    , http-client-tls
     , servant
     , servant-client
-    , http-client-tls
-    , http-api-data
-    , bytestring
-    , base64-bytestring
+    , text
     , xdg-basedir-compliant
-    , dhall
 
   other-modules:   Paths_spotify
   hs-source-dirs:  lib
-  exposed-modules: 
-      Spotify
-    , Spotify.AppEnv
-    , Spotify.UserConfig
-    , Spotify.Effect.Config
-    , Spotify.Effect.FileSystem
-    , Spotify.Effect.Spotify
-    , Spotify.Effect.Spotify.Servant
+  exposed-modules:
+    Spotify
+    Spotify.AppEnv
+    Spotify.Effect.Config
+    Spotify.Effect.FileSystem
+    Spotify.Effect.Spotify
+    Spotify.Effect.Spotify.Servant
+    Spotify.UserConfig
 
 executable spotify
   import:         shared
   build-depends:
-    , base     >=4.13.0.0 && <4.18.0.0.0
+    , base       >=4.13.0.0 && <4.18.0.0.0
     , effectful
     , spotify
 
