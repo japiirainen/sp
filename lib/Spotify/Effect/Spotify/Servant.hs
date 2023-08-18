@@ -82,6 +82,8 @@ instance FromJSON PlayRequest
 data Routes route = Routes
   { play :: route :- "me" :> "player" :> "play" :> ReqBody '[JSON] PlayRequest :> AuthorizedRequest :> PutNoContent
   , pause :: route :- "me" :> "player" :> "pause" :> AuthorizedRequest :> PutNoContent
+  , next :: route :- "me" :> "player" :> "next" :> AuthorizedRequest :> PostNoContent
+  , prev :: route :- "me" :> "player" :> "previous" :> AuthorizedRequest :> PostNoContent
   }
   deriving stock (Generic)
 

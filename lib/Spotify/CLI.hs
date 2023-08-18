@@ -6,12 +6,16 @@ data Command
   = Authorize
   | Play
   | Pause
+  | Next
+  | Prev
 
 instance Show Command where
   show = \case
     Authorize -> "Authorize"
     Play -> "play"
     Pause -> "pause"
+    Next -> "next"
+    Prev -> "prev"
 
 data Options = Options
   { debug :: Bool
@@ -27,6 +31,8 @@ parser =
       ( command "authorize" (info (pure Authorize) (progDesc "Run spotify authorization flow"))
           <> command "play" (info (pure Play) (progDesc "Play current song"))
           <> command "pause" (info (pure Pause) (progDesc "Pause current song"))
+          <> command "next" (info (pure Next) (progDesc "Skips to next track in the user’s queue."))
+          <> command "prev" (info (pure Prev) (progDesc "Skips to previous track in the user’s queue."))
       )
 
 parserInfo :: ParserInfo Options
