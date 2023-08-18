@@ -136,6 +136,24 @@ prevProg = withRefresh $ do
         (Authorization tok)
     )
 
+replayProg :: Program ()
+replayProg = withRefresh $ do
+  tok <- Config.readToken TokenFile
+  void
+    ( Spotify.makeSeekRequest
+        (Authorization tok)
+        0
+    )
+
+seekProg :: Int -> Program ()
+seekProg s = withRefresh $ do
+  tok <- Config.readToken TokenFile
+  void
+    ( Spotify.makeSeekRequest
+        (Authorization tok)
+        (s * 1000)
+    )
+
 authUrl :: String -> Text
 authUrl clientId =
   Text.pack (showBaseUrl accountsBaseUrl)
@@ -199,6 +217,8 @@ runCommand env cmd = case cmd of
   Pause -> runSpotifyEffect env pauseProg >>= handleErrors
   Next -> runSpotifyEffect env nextProg >>= handleErrors
   Prev -> runSpotifyEffect env prevProg >>= handleErrors
+  Replay -> runSpotifyEffect env replayProg >>= handleErrors
+  Seek s -> runSpotifyEffect env (seekProg s) >>= handleErrors
   where
     runEffs m = m & Log.runLogIO & runReader @AppEnv env & runEff
     handleErrors = \case

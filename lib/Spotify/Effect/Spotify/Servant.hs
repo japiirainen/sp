@@ -84,6 +84,7 @@ data Routes route = Routes
   , pause :: route :- "me" :> "player" :> "pause" :> AuthorizedRequest :> PutNoContent
   , next :: route :- "me" :> "player" :> "next" :> AuthorizedRequest :> PostNoContent
   , prev :: route :- "me" :> "player" :> "previous" :> AuthorizedRequest :> PostNoContent
+  , seek :: route :- "me" :> "player" :> "seek" :> QueryParam' '[Required, Strict] "position_ms" Int :> AuthorizedRequest :> PutNoContent
   }
   deriving stock (Generic)
 

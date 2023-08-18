@@ -8,6 +8,8 @@ data Command
   | Pause
   | Next
   | Prev
+  | Replay
+  | Seek Int
 
 instance Show Command where
   show = \case
@@ -16,6 +18,8 @@ instance Show Command where
     Pause -> "pause"
     Next -> "next"
     Prev -> "prev"
+    Replay -> "replay"
+    Seek s -> "seek " <> show s
 
 data Options = Options
   { debug :: Bool
@@ -31,8 +35,10 @@ parser =
       ( command "authorize" (info (pure Authorize) (progDesc "Run spotify authorization flow"))
           <> command "play" (info (pure Play) (progDesc "Play current song"))
           <> command "pause" (info (pure Pause) (progDesc "Pause current song"))
-          <> command "next" (info (pure Next) (progDesc "Skips to next track in the user’s queue."))
-          <> command "prev" (info (pure Prev) (progDesc "Skips to previous track in the user’s queue."))
+          <> command "next" (info (pure Next) (progDesc "Skips to next track in the queue."))
+          <> command "prev" (info (pure Prev) (progDesc "Skips to previous track in the queue."))
+          <> command "replay" (info (pure Replay) (progDesc "Replay current song from the beginning."))
+          <> command "seek" (info (Seek <$> argument (auto @Int) (help "Where to seek in seconds.")) (progDesc "Seeks to the given position in the currently playing track."))
       )
 
 parserInfo :: ParserInfo Options

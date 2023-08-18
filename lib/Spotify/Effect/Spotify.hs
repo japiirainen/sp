@@ -9,6 +9,7 @@ module Spotify.Effect.Spotify (
   makePauseRequest,
   makeNextRequest,
   makePrevRequest,
+  makeSeekRequest,
   module Spotify.Effect.Spotify.Servant,
 )
 where
@@ -34,6 +35,7 @@ data Spotify :: Effect where
   MakePauseRequest :: Authorization -> Spotify m NoContent
   MakeNextRequest :: Authorization -> Spotify m NoContent
   MakePrevRequest :: Authorization -> Spotify m NoContent
+  MakeSeekRequest :: Authorization -> Int -> Spotify m NoContent
 
 makeEffect ''Spotify
 
@@ -59,6 +61,10 @@ runSpotifyServant = interpret $ \_ -> \case
   MakePrevRequest mauth -> do
     env <- asks mainApiEnv
     let route = (routes // prev) mauth
+    adapt GenericApiError (runClientM route env)
+  MakeSeekRequest mauth seekMs -> do
+    env <- asks mainApiEnv
+    let route = (routes // seek) seekMs mauth
     adapt GenericApiError (runClientM route env)
   where
     adapt errCon m =
