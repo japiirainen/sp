@@ -75,16 +75,16 @@ library
     , exceptions
     , http-api-data
     , http-client-tls
+    , mtl
+    , open-browser
+    , optparse-applicative
     , servant
     , servant-client
     , servant-server
+    , text
     , wai
     , warp
-    , text
     , xdg-basedir-compliant
-    , optparse-applicative
-    , open-browser
-    , mtl
 
   other-modules:   Paths_spotify
   hs-source-dirs:  lib
@@ -92,16 +92,16 @@ library
     Spotify
     Spotify.AppEnv
     Spotify.CLI
-    Spotify.UserConfig
-    Spotify.Errors
-    Spotify.Types
-    Spotify.Effect.Config
-    Spotify.Effect.FileSystem
-    Spotify.Effect.Spotify
-    Spotify.Effect.Spotify.Servant
-    Spotify.Effect.Log
     Spotify.Effect.Browser
     Spotify.Effect.CallbackServer
+    Spotify.Effect.Config
+    Spotify.Effect.FileSystem
+    Spotify.Effect.Log
+    Spotify.Effect.Spotify
+    Spotify.Effect.Spotify.Servant
+    Spotify.Errors
+    Spotify.Types
+    Spotify.UserConfig
 
 executable spotify
   import:         shared
