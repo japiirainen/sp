@@ -89,7 +89,7 @@ refreshToken = do
         , redirect_uri = Nothing
         , refresh_token = Just tok
         }
-  Log.info "Refreshing access token."
+  Log.debug "Refreshing access token."
   Config.writeToken (fromStrict (encodeUtf8 (access_token res)))
 
 withRefresh :: Program () -> Program ()
@@ -203,7 +203,7 @@ runCommand env cmd = case cmd of
     runEffs m = m & Log.runLogIO & runReader @AppEnv env & runEff
     handleErrors = \case
       Left err -> Log.error (Text.pack (show err)) & runEffs
-      Right _ -> Log.info ("Command `" <> Text.pack (show cmd) <> "` executed succesfully.") & runEffs
+      Right _ -> Log.debug ("Command `" <> Text.pack (show cmd) <> "` executed succesfully.") & runEffs
 
 main :: IO ()
 main = do
