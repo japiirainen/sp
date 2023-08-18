@@ -51,30 +51,6 @@ scope =
 redirectUri :: String
 redirectUri = "http://localhost:7777/callback"
 
--- prog :: (Config :> es, Spotify :> es) => Eff es ()
--- prog = do
---   c <- readConfig
---   let auth = Just $ TokenAuthorization (UC.clientId c) (UC.clientSecret c)
---   let tokReq =
---         TokenRequest
---           { grant_type = RefreshTokenGrantType
---           , code = Nothing
---           , redirect_uri = Just "https://github.com/japiirainen/spotify"
---           , refresh_token = Just (refreshToken c)
---           }
---   res <- makeTokenRequest auth tokReq
---   let mauth = Authorization (access_token res)
---   let playReq =
---         PlayRequest
---           { context_uri = Nothing
---           , uris = Nothing
---           , offset = Nothing
---           , position_ms = 10
---           }
---   makePlayRequest mauth playReq
-
--- makePauseRequest mauth
-
 refreshToken :: Program ()
 refreshToken = do
   c <- Config.readConfig BaseConfig
