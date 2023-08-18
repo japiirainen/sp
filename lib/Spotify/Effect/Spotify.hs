@@ -17,6 +17,7 @@ import Effectful.Dispatch.Dynamic (interpret)
 import Effectful.Error.Static (Error, throwError)
 import Effectful.Reader.Static (Reader, asks)
 import Effectful.TH (makeEffect)
+import Servant (NoContent)
 import Servant.Client (runClientM, (//))
 
 import Spotify.AppEnv
@@ -27,8 +28,8 @@ import Spotify.Errors
 
 data Spotify :: Effect where
   MakeTokenRequest :: Maybe TokenAuthorization -> TokenRequest -> Spotify m TokenResponse
-  MakePlayRequest :: Authorization -> PlayRequest -> Spotify m ()
-  MakePauseRequest :: Authorization -> Spotify m ()
+  MakePlayRequest :: Authorization -> PlayRequest -> Spotify m NoContent
+  MakePauseRequest :: Authorization -> Spotify m NoContent
 
 makeEffect ''Spotify
 

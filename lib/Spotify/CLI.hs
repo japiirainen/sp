@@ -6,7 +6,12 @@ data Command
   = Authorize
   | Play
   | Pause
-  deriving stock (Show)
+
+instance Show Command where
+  show = \case
+    Authorize -> "Authorize"
+    Play -> "play"
+    Pause -> "pause"
 
 data Options = Options
   { debug :: Bool

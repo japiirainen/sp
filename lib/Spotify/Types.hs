@@ -6,9 +6,11 @@ import Effectful.Error.Static (Error)
 import Effectful.Reader.Static (Reader)
 import Servant (ServerError)
 
+import Effectful.Concurrent (Concurrent)
 import Spotify.AppEnv (AppEnv)
 import Spotify.Effect.Browser (Browser)
 import Spotify.Effect.Config (Config)
+import Spotify.Effect.Console (Console)
 import Spotify.Effect.FileSystem (FileSystem)
 import Spotify.Effect.Log (Log)
 import Spotify.Effect.Spotify (Spotify)
@@ -22,8 +24,10 @@ type Program =
      , Config
      , FileSystem
      , Log
+     , Console
      , Reader AppEnv
      , Error SpotifyError
+     , Concurrent
      , IOE
      ]
 
@@ -36,5 +40,6 @@ type CBServer =
      , Reader AppEnv
      , Error ServerError
      , Error SpotifyError
+     , Concurrent
      , IOE
      ]

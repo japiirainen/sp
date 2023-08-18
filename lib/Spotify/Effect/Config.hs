@@ -2,6 +2,7 @@
 
 module Spotify.Effect.Config (
   readConfig,
+  readToken,
   writeToken,
   runConfigIO,
   Config (..),
@@ -18,6 +19,7 @@ import Spotify.UserConfig
 
 data Config :: Effect where
   ReadConfig :: ConfigFile -> Config m UserConfig
+  ReadToken :: ConfigFile -> Config m Text
   WriteToken :: ByteString -> Config m ()
 
 makeEffect ''Config
@@ -27,4 +29,5 @@ runConfigIO = interpret $ \_ -> \case
   ReadConfig path -> do
     fileContents <- readConfigFile ("spotify/" <> show path)
     liftIO $ input auto fileContents
+  ReadToken path -> readConfigFile ("spotify/" <> show path)
   WriteToken tok -> writeConfigFile ("spotify/" <> show TokenFile) tok

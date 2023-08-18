@@ -1,17 +1,13 @@
-module Spotify.Effect.CallbackServer (runServer) where
+module Spotify.CallbackServer (runServer) where
 
 import Control.Monad.Except qualified as T
-import Servant
-import Servant.API.Generic
-import Servant.Server.Generic
-
 import Data.Function ((&))
 import Data.Kind (Type)
 import Data.Text (Text)
-import Data.Text.Lazy (fromStrict)
-import Data.Text.Lazy.Encoding (encodeUtf8)
 import Effectful (Eff, IOE, liftIO, runEff)
 import Effectful qualified as Eff
+import Effectful.Concurrent (runConcurrent)
+import Effectful.Concurrent.MVar (MVar, putMVar)
 import Effectful.Error.Static (runErrorNoCallStack)
 import Effectful.Reader.Static (runReader)
 import Network.Wai.Handler.Warp (
@@ -19,11 +15,16 @@ import Network.Wai.Handler.Warp (
   runSettings,
   setPort,
  )
+import Servant
+import Servant.API.Generic
+import Servant.Server.Generic
+
+import Data.Text qualified as Text
 import Spotify.AppEnv (AppEnv)
 import Spotify.Effect.Config qualified as Config
 import Spotify.Effect.FileSystem qualified as FileSystem
 import Spotify.Effect.Log qualified as Log
-import Spotify.Errors
+import Spotify.Errors (SpotifyError)
 import Spotify.Types (CBServer)
 
 newtype Routes route = Routes
@@ -36,17 +37,16 @@ newtype Routes route = Routes
   }
   deriving stock (Generic)
 
-server :: Routes (AsServerT CBServer)
-server =
+server :: MVar () -> Routes (AsServerT CBServer)
+server toDie =
   Routes
     { callback = handler
     }
   where
     handler :: Maybe Text -> Text -> CBServer String
-    handler _ code = do
-      Config.writeToken (encodeUtf8 (fromStrict code))
-      Log.debug "Wrote token file."
-      pure "success"
+    handler _ code =
+      putMVar toDie ()
+        >> pure ("Enter the following to the promt given on the command line: " <> Text.unpack code)
 
 effToHandler ::
   forall (a :: Type).
@@ -70,12 +70,13 @@ nt env prog =
     & runReader @AppEnv env
     & runErrorNoCallStack @ServerError
     & runErrorNoCallStack @SpotifyError
+    & runConcurrent
     & effToHandler
 
-mkServer :: AppEnv -> Application
-mkServer env = genericServeT (nt env) server
+mkServer :: MVar () -> AppEnv -> Application
+mkServer toDie env = genericServeT (nt env) (server toDie)
 
-runServer :: (IOE Eff.:> es) => AppEnv -> Eff es ()
-runServer = liftIO . runSettings settings . mkServer
+runServer :: (IOE Eff.:> es) => MVar () -> AppEnv -> Eff es ()
+runServer toDie = liftIO . runSettings settings . mkServer toDie
   where
     settings = setPort 7777 defaultSettings

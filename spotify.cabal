@@ -91,10 +91,11 @@ library
   exposed-modules:
     Spotify
     Spotify.AppEnv
+    Spotify.CallbackServer
     Spotify.CLI
     Spotify.Effect.Browser
-    Spotify.Effect.CallbackServer
     Spotify.Effect.Config
+    Spotify.Effect.Console
     Spotify.Effect.FileSystem
     Spotify.Effect.Log
     Spotify.Effect.Spotify

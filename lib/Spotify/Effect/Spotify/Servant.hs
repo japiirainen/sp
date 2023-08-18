@@ -1,21 +1,23 @@
-module Spotify.Effect.Spotify.Servant
+module Spotify.Effect.Spotify.Servant (
+  accountRoutes,
+  accountsEnv,
+  accountsBaseUrl,
+  mainEnv,
+  routes,
+  authorizeApi,
+  scopeFromList,
+  ResponseType (..),
+  AccountRoutes (..),
+  TokenGrantType (..),
+  TokenAuthorization (..),
+  TokenRequest (..),
+  TokenResponse (..),
+  Routes (..),
+  Authorization (..),
+  PlayRequest (..),
+  Scope (..),
+)
 where
-
--- (
--- accountRoutes,
--- accountsEnv,
--- mainEnv,
--- routes,
--- authorizeApi,
--- AccountRoutes (..),
--- TokenGrantType (..),
--- TokenAuthorization (..),
--- TokenRequest (..),
--- TokenResponse (..),
--- Routes (..),
--- Authorization (..),
--- PlayRequest (..),
--- )
 
 import Control.Monad.IO.Class (MonadIO)
 import Data.Aeson (FromJSON, ToJSON (..), withText)
@@ -78,8 +80,8 @@ instance ToJSON PlayRequest
 instance FromJSON PlayRequest
 
 data Routes route = Routes
-  { play :: route :- "me" :> "player" :> "play" :> ReqBody '[JSON] PlayRequest :> AuthorizedRequest :> Put '[JSON] ()
-  , pause :: route :- "me" :> "player" :> "pause" :> AuthorizedRequest :> Put '[JSON] ()
+  { play :: route :- "me" :> "player" :> "play" :> ReqBody '[JSON] PlayRequest :> AuthorizedRequest :> PutNoContent
+  , pause :: route :- "me" :> "player" :> "pause" :> AuthorizedRequest :> PutNoContent
   }
   deriving stock (Generic)
 
