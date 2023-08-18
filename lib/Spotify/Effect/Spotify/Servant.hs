@@ -31,7 +31,9 @@ import Network.HTTP.Client.TLS qualified as TLS
 import Servant.API
 import Servant.API.Generic
 import Servant.Client
-import Web.FormUrlEncoded (FromForm, ToForm (..))
+import Web.FormUrlEncoded (ToForm (..))
+
+import Spotify.Effect.Spotify.TokenResponse
 
 type TokenRoute =
   "token"
@@ -144,16 +146,6 @@ instance ToJSON Scope where
 
 scopeFromList :: [Text] -> Scope
 scopeFromList = Scope
-
-data TokenResponse = TokenResponse
-  { access_token :: Text
-  , token_type :: Text
-  , expires_in :: Int
-  }
-  deriving stock (Generic, Show)
-
-instance FromJSON TokenResponse
-instance FromForm TokenResponse
 
 data TokenGrantType
   = AuthorizationCodeGrantType

@@ -5,11 +5,12 @@ module Spotify.UserConfig (
 
 import Dhall
 
-data ConfigFile = BaseConfig | TokenFile
+data ConfigFile = BaseConfig | RefreshToken | AccessToken
 
 instance Show ConfigFile where
   show BaseConfig = "config.dhall"
-  show TokenFile = "token"
+  show RefreshToken = "refresh_token"
+  show AccessToken = "access_token"
 
 data UserConfig = UserConfig
   { clientId :: Text

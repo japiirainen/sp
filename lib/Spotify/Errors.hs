@@ -9,6 +9,7 @@ data SpotifyError
   | TokenRequestError
   | GenericApiError
   | AuthorizationError
+  | InvalidTokenError
 
 instance Show SpotifyError where
   show = \case
@@ -17,3 +18,4 @@ instance Show SpotifyError where
     TokenRequestError -> "Token request failed. Try to run authorize flow."
     GenericApiError -> "Something bad happened. Please open an issue at https://github.com/japiirainen/spotify"
     AuthorizationError -> "Error during the authorization flow."
+    InvalidTokenError -> "Invalid access/refresh token."

@@ -30,6 +30,7 @@ import Spotify.Effect.FileSystem qualified as FileSystem
 import Spotify.Effect.Log qualified as Log
 import Spotify.Effect.Spotify qualified as Spotify
 import Spotify.Effect.Spotify.Servant
+import Spotify.Effect.Spotify.TokenResponse qualified as TokenResponse
 import Spotify.Errors
 import Spotify.Types
 import Spotify.UserConfig as Config
@@ -51,32 +52,32 @@ scope =
 redirectUri :: String
 redirectUri = "http://localhost:7777/callback"
 
-refreshToken :: Program ()
-refreshToken = do
+refresh :: Program ()
+refresh = do
+  Log.debug "Refreshing access token."
   c <- Config.readConfig BaseConfig
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken RefreshToken
   let auth = Just (TokenAuthorization (UC.clientId c) (UC.clientSecret c))
   res <-
     Spotify.makeTokenRequest
       auth
       TokenRequest
         { grant_type = RefreshTokenGrantType
+        , refresh_token = Just tok
         , code = Nothing
         , redirect_uri = Nothing
-        , refresh_token = Just tok
         }
-  Log.debug "Refreshing access token."
-  Config.writeToken (fromStrict (encodeUtf8 (access_token res)))
+  Config.writeAccessToken (fromStrict (encodeUtf8 (access_token res)))
 
 withRefresh :: Program () -> Program ()
 withRefresh prog = do
   Error.catchError @SpotifyError
     prog
-    (\_ e -> case e of TokenRequestError -> refreshToken >> playProg; _ -> Error.throwError e)
+    (\_ e -> case e of InvalidTokenError -> refresh >> playProg; _ -> Error.throwError e)
 
 playProg :: Program ()
 playProg = withRefresh $ do
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken AccessToken
   void
     ( Spotify.makePlayRequest
         (Authorization tok)
@@ -90,7 +91,7 @@ playProg = withRefresh $ do
 
 pauseProg :: Program ()
 pauseProg = withRefresh $ do
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken AccessToken
   void
     ( Spotify.makePauseRequest
         (Authorization tok)
@@ -98,7 +99,7 @@ pauseProg = withRefresh $ do
 
 nextProg :: Program ()
 nextProg = withRefresh $ do
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken AccessToken
   void
     ( Spotify.makeNextRequest
         (Authorization tok)
@@ -106,7 +107,7 @@ nextProg = withRefresh $ do
 
 prevProg :: Program ()
 prevProg = withRefresh $ do
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken AccessToken
   void
     ( Spotify.makePrevRequest
         (Authorization tok)
@@ -114,7 +115,7 @@ prevProg = withRefresh $ do
 
 replayProg :: Program ()
 replayProg = withRefresh $ do
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken AccessToken
   void
     ( Spotify.makeSeekRequest
         (Authorization tok)
@@ -123,7 +124,7 @@ replayProg = withRefresh $ do
 
 seekProg :: Int -> Program ()
 seekProg s = withRefresh $ do
-  tok <- Config.readToken TokenFile
+  tok <- Config.readToken AccessToken
   void
     ( Spotify.makeSeekRequest
         (Authorization tok)
@@ -168,7 +169,11 @@ authorize = do
         , refresh_token = Nothing
         }
 
-  Config.writeToken (fromStrict (encodeUtf8 (access_token res)))
+  case TokenResponse.refresh_token res of
+    Nothing -> Error.throwError GenericApiError
+    Just tok -> Config.writeRefreshToken (fromStrict (encodeUtf8 tok))
+
+  Config.writeAccessToken (fromStrict (encodeUtf8 (TokenResponse.access_token res)))
 
   Log.info "Authorization flow was succesful!"
 

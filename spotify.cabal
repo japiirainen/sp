@@ -75,6 +75,7 @@ library
     , exceptions
     , http-api-data
     , http-client-tls
+    , http-types
     , mtl
     , open-browser
     , optparse-applicative
@@ -100,6 +101,7 @@ library
     Spotify.Effect.Log
     Spotify.Effect.Spotify
     Spotify.Effect.Spotify.Servant
+    Spotify.Effect.Spotify.TokenResponse
     Spotify.Errors
     Spotify.Types
     Spotify.UserConfig
