@@ -72,7 +72,7 @@ withRefresh :: Program () -> Program ()
 withRefresh prog = do
   Error.catchError @SpotifyError
     prog
-    (\_ e -> case e of InvalidTokenError -> refresh >> playProg; _ -> Error.throwError e)
+    (\_ e -> case e of InvalidTokenError -> refresh >> prog; _ -> Error.throwError e)
 
 playProg :: Program ()
 playProg = withRefresh $ do
