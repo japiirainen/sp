@@ -7,7 +7,8 @@ import Data.Text (Text)
 import Effectful (Eff, IOE, liftIO, runEff)
 import Effectful qualified as Eff
 import Effectful.Concurrent (runConcurrent)
-import Effectful.Concurrent.MVar (MVar, putMVar)
+import Effectful.Concurrent.Chan (Chan)
+import Effectful.Concurrent.Chan qualified as Chan
 import Effectful.Error.Static (runErrorNoCallStack)
 import Effectful.Reader.Static (runReader)
 import Network.Wai.Handler.Warp (
@@ -19,7 +20,6 @@ import Servant
 import Servant.API.Generic
 import Servant.Server.Generic
 
-import Data.Text qualified as Text
 import Spotify.AppEnv (AppEnv)
 import Spotify.Effect.Config qualified as Config
 import Spotify.Effect.FileSystem qualified as FileSystem
@@ -37,16 +37,14 @@ newtype Routes route = Routes
   }
   deriving stock (Generic)
 
-server :: MVar () -> Routes (AsServerT CBServer)
-server toDie =
+server :: Chan Text -> Routes (AsServerT CBServer)
+server chan =
   Routes
     { callback = handler
     }
   where
     handler :: Maybe Text -> Text -> CBServer String
-    handler _ code =
-      putMVar toDie ()
-        >> pure ("Enter the following to the promt given on the command line: " <> Text.unpack code)
+    handler _ code = Chan.writeChan chan code >> pure "authorized"
 
 effToHandler ::
   forall (a :: Type).
@@ -73,10 +71,10 @@ nt env prog =
     & runConcurrent
     & effToHandler
 
-mkServer :: MVar () -> AppEnv -> Application
-mkServer toDie env = genericServeT (nt env) (server toDie)
+mkServer :: Chan Text -> AppEnv -> Application
+mkServer chan env = genericServeT (nt env) (server chan)
 
-runServer :: (IOE Eff.:> es) => MVar () -> AppEnv -> Eff es ()
-runServer toDie = liftIO . runSettings settings . mkServer toDie
+runServer :: (IOE Eff.:> es) => Chan Text -> AppEnv -> Eff es ()
+runServer chan = liftIO . runSettings settings . mkServer chan
   where
     settings = setPort 7777 defaultSettings

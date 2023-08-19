@@ -6,9 +6,8 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Effectful (runEff)
 import Effectful.Concurrent
-import Effectful.Concurrent.Async (race_)
-import Effectful.Concurrent.MVar (newEmptyMVar)
-import Effectful.Concurrent.MVar.Strict (takeMVar)
+import Effectful.Concurrent.Async (race)
+import Effectful.Concurrent.Chan qualified as Chan
 import Effectful.Error.Static (runErrorNoCallStack)
 import Effectful.Error.Static qualified as Error
 import Effectful.Reader.Static (ask, runReader)
@@ -151,13 +150,15 @@ authorize = do
 
   env <- ask @AppEnv
 
-  toDie <- newEmptyMVar
+  chan <- Chan.newChan
 
-  race_ (takeMVar toDie) (CallbackServer.runServer toDie env)
+  rec <- race (Chan.readChan chan) (CallbackServer.runServer chan env)
+
+  userCode <- case rec of Left co -> pure co; Right _ -> Error.throwError (UnexpectedError "")
+
+  Log.info userCode
 
   let auth = Just $ TokenAuthorization (UC.clientId c) (UC.clientSecret c)
-
-  userCode <- Console.readLine
 
   res <-
     Spotify.makeTokenRequest
