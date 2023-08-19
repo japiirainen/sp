@@ -88,11 +88,10 @@ runSpotifyServant = interpret $ \_ -> \case
     adapt errCon m =
       liftIO m >>= \case
         Left msg -> do
-          Log.error (ppClientError msg)
           case msg of
             FailureResponse _ resp ->
               case statusCode (responseStatusCode resp) of
                 401 -> throwError InvalidTokenError
-                _ -> throwError errCon
-            _ -> throwError errCon
+                _ -> Log.error (ppClientError msg) >> throwError errCon
+            _ -> Log.error (ppClientError msg) >> throwError errCon
         Right res -> pure res
