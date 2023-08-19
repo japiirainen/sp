@@ -80,6 +80,7 @@ library
     , mtl
     , open-browser
     , optparse-applicative
+    , prettyprinter
     , servant
     , servant-client
     , servant-server
@@ -87,7 +88,6 @@ library
     , wai
     , warp
     , xdg-basedir-compliant
-    , prettyprinter
 
   other-modules:   Paths_spotify
   hs-source-dirs:  lib
