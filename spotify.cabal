@@ -19,6 +19,7 @@ common shared
   default-extensions:
     NoStarIsType
     BangPatterns
+    BlockArguments
     ConstraintKinds
     DataKinds
     DeriveDataTypeable
@@ -86,6 +87,7 @@ library
     , wai
     , warp
     , xdg-basedir-compliant
+    , prettyprinter
 
   other-modules:   Paths_spotify
   hs-source-dirs:  lib

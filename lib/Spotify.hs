@@ -15,9 +15,7 @@ import Servant.Client (showBaseUrl)
 import Servant.Links
 import Web.HttpApiData
 
-import Data.ByteString (fromStrict)
 import Data.Functor (void)
-import Data.Text.Encoding (encodeUtf8)
 import Spotify.AppEnv
 import Spotify.CLI (Command (..))
 import Spotify.CLI qualified
@@ -33,7 +31,6 @@ import Spotify.Effect.Spotify.TokenResponse qualified as TokenResponse
 import Spotify.Errors
 import Spotify.Types
 import Spotify.UserConfig as Config
-import Spotify.UserConfig qualified as UC
 
 scope :: Scope
 scope =
@@ -54,19 +51,24 @@ redirectUri = "http://localhost:7777/callback"
 refresh :: Program ()
 refresh = do
   Log.debug "Refreshing access token."
-  c <- Config.readConfig BaseConfig
-  tok <- Config.readToken RefreshToken
-  let auth = Just (TokenAuthorization (UC.clientId c) (UC.clientSecret c))
+
+  c <- Config.readConfig ConfigFile
+
+  let auth = Just (TokenAuthorization (Config.clientId c) (Config.clientSecret c))
+
   res <-
     Spotify.makeTokenRequest
       auth
       TokenRequest
         { grant_type = RefreshTokenGrantType
-        , refresh_token = Just tok
+        , refresh_token = Just (Config.refreshToken c)
         , code = Nothing
         , redirect_uri = Nothing
         }
-  Config.writeAccessToken (fromStrict (encodeUtf8 (access_token res)))
+
+  Config.writeConfig
+    ConfigFile
+    (UserConfig (Config.clientId c) (Config.clientSecret c) (Config.refreshToken c) (access_token res))
 
 withRefresh :: Program () -> Program ()
 withRefresh prog = do
@@ -74,12 +76,16 @@ withRefresh prog = do
     prog
     (\_ e -> case e of InvalidTokenError -> refresh >> prog; _ -> Error.throwError e)
 
+withAuth :: (Authorization -> Program ()) -> Program ()
+withAuth prog = do
+  tok <- Config.accessToken <$> Config.readConfig ConfigFile
+  prog (Authorization tok)
+
 playProg :: Program ()
-playProg = withRefresh $ do
-  tok <- Config.readToken AccessToken
+playProg = withRefresh $ withAuth $ \auth ->
   void
     ( Spotify.makePlayRequest
-        (Authorization tok)
+        auth
         PlayRequest
           { context_uri = Nothing
           , uris = Nothing
@@ -89,46 +95,21 @@ playProg = withRefresh $ do
     )
 
 pauseProg :: Program ()
-pauseProg = withRefresh $ do
-  tok <- Config.readToken AccessToken
-  void
-    ( Spotify.makePauseRequest
-        (Authorization tok)
-    )
+pauseProg = withRefresh $ withAuth do void . Spotify.makePauseRequest
 
 nextProg :: Program ()
-nextProg = withRefresh $ do
-  tok <- Config.readToken AccessToken
-  void
-    ( Spotify.makeNextRequest
-        (Authorization tok)
-    )
+nextProg = withRefresh $ withAuth do void . Spotify.makeNextRequest
 
 prevProg :: Program ()
-prevProg = withRefresh $ do
-  tok <- Config.readToken AccessToken
-  void
-    ( Spotify.makePrevRequest
-        (Authorization tok)
-    )
+prevProg = withRefresh $ withAuth do void . Spotify.makePrevRequest
 
 replayProg :: Program ()
-replayProg = withRefresh $ do
-  tok <- Config.readToken AccessToken
-  void
-    ( Spotify.makeSeekRequest
-        (Authorization tok)
-        0
-    )
+replayProg = withRefresh $ withAuth \auth ->
+  void (Spotify.makeSeekRequest auth 0)
 
 seekProg :: Int -> Program ()
-seekProg s = withRefresh $ do
-  tok <- Config.readToken AccessToken
-  void
-    ( Spotify.makeSeekRequest
-        (Authorization tok)
-        (s * 1000)
-    )
+seekProg s = withRefresh $ withAuth \auth ->
+  void (Spotify.makeSeekRequest auth (s * 1000))
 
 authUrl :: String -> Text
 authUrl clientId =
@@ -138,9 +119,10 @@ authUrl clientId =
 
 authorize :: Program ()
 authorize = do
-  c <- Config.readConfig BaseConfig
+  ci <- Console.prompt "Enter Client ID : "
+  cs <- Console.prompt "Enter Client Secret : "
 
-  let url = authUrl (Text.unpack (Config.clientId c))
+  let url = authUrl (Text.unpack ci)
 
   browserOpened <- Browser.open (Text.unpack url)
 
@@ -154,15 +136,13 @@ authorize = do
 
   rec <- race (Chan.readChan chan) (CallbackServer.runServer chan env)
 
-  userCode <- case rec of Left co -> pure co; Right _ -> Error.throwError (UnexpectedError "")
-
-  Log.info userCode
-
-  let auth = Just $ TokenAuthorization (UC.clientId c) (UC.clientSecret c)
+  userCode <- case rec of
+    Left co -> pure co
+    Right _ -> Error.throwError (UnexpectedError "Server died before receiving code from channel.")
 
   res <-
     Spotify.makeTokenRequest
-      auth
+      (Just (TokenAuthorization ci cs))
       TokenRequest
         { grant_type = AuthorizationCodeGrantType
         , code = Just userCode
@@ -170,11 +150,13 @@ authorize = do
         , refresh_token = Nothing
         }
 
-  case TokenResponse.refresh_token res of
-    Nothing -> Error.throwError GenericApiError
-    Just tok -> Config.writeRefreshToken (fromStrict (encodeUtf8 tok))
+  let at = TokenResponse.access_token res
 
-  Config.writeAccessToken (fromStrict (encodeUtf8 (TokenResponse.access_token res)))
+  rt <- case TokenResponse.refresh_token res of
+    Just tok -> pure tok
+    Nothing -> Error.throwError (UnexpectedError "Didn't receive refresh_token from /authorize")
+
+  Config.writeConfig ConfigFile (UserConfig ci cs rt at)
 
   Log.info "Authorization flow was succesful!"
 

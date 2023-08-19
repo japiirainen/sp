@@ -5,17 +5,18 @@ module Spotify.UserConfig (
 
 import Dhall
 
-data ConfigFile = BaseConfig | RefreshToken | AccessToken
+data ConfigFile = ConfigFile
 
 instance Show ConfigFile where
-  show BaseConfig = "config.dhall"
-  show RefreshToken = "refresh_token"
-  show AccessToken = "access_token"
+  show ConfigFile = "config.dhall"
 
 data UserConfig = UserConfig
   { clientId :: Text
   , clientSecret :: Text
+  , refreshToken :: Text
+  , accessToken :: Text
   }
   deriving stock (Generic, Show)
 
 instance FromDhall UserConfig
+instance ToDhall UserConfig
