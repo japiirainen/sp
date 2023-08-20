@@ -209,7 +209,7 @@ runCommand env cmd = case cmd of
   Prev -> runSpotifyEffect env prevProg >>= handleErrors
   Replay -> runSpotifyEffect env replayProg >>= handleErrors
   Seek s -> runSpotifyEffect env (seekProg s) >>= handleErrors
-  Search q -> runSpotifyEffect env (searchTracksProg q) >>= handleErrors
+  SearchTrack q -> runSpotifyEffect env (searchTracksProg q) >>= handleErrors
   where
     runEffs m = m & Log.runLogIO & runReader @AppEnv env & runEff
     handleErrors = \case
