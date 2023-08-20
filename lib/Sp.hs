@@ -14,7 +14,7 @@ import Effectful.Concurrent.Async (race)
 import Effectful.Concurrent.Chan qualified as Chan
 import Effectful.Error.Static (runErrorNoCallStack)
 import Effectful.Error.Static qualified as Error
-import Effectful.Reader.Static (ask, runReader)
+import Effectful.Reader.Static (runReader)
 import Servant.Client (showBaseUrl)
 import Servant.Links
 import Web.HttpApiData
@@ -156,11 +156,9 @@ authorize = do
     Log.info $
       "Open link manually in your favorite browser: " <> url
 
-  env <- ask @AppEnv
-
   chan <- Chan.newChan
 
-  code <- race (Chan.readChan chan) (CallbackServer.runServer chan env)
+  code <- race (Chan.readChan chan) (CallbackServer.runServer chan)
 
   userCode <- case code of
     Left co -> pure co

@@ -10,7 +10,6 @@ import Effectful.Concurrent (runConcurrent)
 import Effectful.Concurrent.Chan (Chan)
 import Effectful.Concurrent.Chan qualified as Chan
 import Effectful.Error.Static (runErrorNoCallStack)
-import Effectful.Reader.Static (runReader)
 import Network.Wai.Handler.Warp (
   defaultSettings,
   runSettings,
@@ -20,11 +19,6 @@ import Servant
 import Servant.API.Generic
 import Servant.Server.Generic
 
-import Sp.AppEnv (AppEnv)
-import Sp.Effect.Config qualified as Config
-import Sp.Effect.FileSystem qualified as FileSystem
-import Sp.Effect.Log qualified as Log
-import Sp.Errors (SpError)
 import Sp.Types (CBServer)
 
 newtype Routes route = Routes
@@ -49,32 +43,25 @@ server chan =
 effToHandler ::
   forall (a :: Type).
   () =>
-  Eff '[IOE] (Either SpError (Either ServerError a)) ->
+  Eff '[IOE] (Either ServerError a) ->
   Handler a
 effToHandler computation = do
   v <- liftIO . runEff $! computation
   case v of
-    Right foo -> case foo of
-      Left err -> T.throwError err
-      Right a -> pure a
-    Left _ -> T.throwError err500
+    Left err -> T.throwError err
+    Right a -> pure a
 
-nt :: AppEnv -> CBServer a -> Handler a
-nt env prog =
+nt :: CBServer a -> Handler a
+nt prog =
   prog
-    & Config.runConfigIO
-    & FileSystem.runFileSystemIO
-    & Log.runLogIO
-    & runReader @AppEnv env
     & runErrorNoCallStack @ServerError
-    & runErrorNoCallStack @SpError
     & runConcurrent
     & effToHandler
 
-mkServer :: Chan Text -> AppEnv -> Application
-mkServer chan env = genericServeT (nt env) (server chan)
+mkServer :: Chan Text -> Application
+mkServer chan = genericServeT nt (server chan)
 
-runServer :: (IOE Eff.:> es) => Chan Text -> AppEnv -> Eff es ()
-runServer chan = liftIO . runSettings settings . mkServer chan
+runServer :: (IOE Eff.:> es) => Chan Text -> Eff es ()
+runServer = liftIO . runSettings settings . mkServer
   where
     settings = setPort 7777 defaultSettings

@@ -34,12 +34,7 @@ type Program =
 type CBServer :: Type -> Type
 type CBServer =
   Eff
-    '[ Config
-     , FileSystem
-     , Log
-     , Reader AppEnv
-     , Error ServerError
-     , Error SpError
+    '[ Error ServerError
      , Concurrent
      , IOE
      ]
