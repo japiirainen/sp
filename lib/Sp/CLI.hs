@@ -34,11 +34,11 @@ data Options = Options
 parser :: Parser Options
 parser =
   Options
-    <$> switch (long "debug" <> short 'd' <> help "Weather to print debug information or not")
+    <$> switch (long "debug" <> short 'd' <> help "Weather to print debug information or not.")
     <*> subparser
-      ( command "authorize" (info (pure Authorize) (progDesc "Run `sp` authorization flow"))
-          <> command "play" (info (pure Play) (progDesc "Play current song"))
-          <> command "pause" (info (pure Pause) (progDesc "Pause current song"))
+      ( command "authorize" (info (pure Authorize) (progDesc "Run `sp` authorization flow."))
+          <> command "play" (info (pure Play) (progDesc "Play current song."))
+          <> command "pause" (info (pure Pause) (progDesc "Pause current song."))
           <> command "next" (info (pure Next) (progDesc "Skips to next track in the queue."))
           <> command "prev" (info (pure Prev) (progDesc "Skips to previous track in the queue."))
           <> command "replay" (info (pure Replay) (progDesc "Replay current song from the beginning."))
@@ -50,7 +50,7 @@ parserInfo :: ParserInfo Options
 parserInfo =
   info
     (helper <*> parser)
-    (progDesc "Command-line utility for the `fp` programming language")
+    (progDesc "`sp` is a simple CLI for interacting with spotify .")
 
 getOpts :: IO Options
 getOpts = execParser parserInfo
