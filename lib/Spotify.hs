@@ -55,23 +55,19 @@ refresh :: Program ()
 refresh = do
   Log.debug "Refreshing access token."
 
-  c <- Config.readConfig ConfigFile
+  UserConfig {clientId, clientSecret, refreshToken} <- Config.readConfig ConfigFile
 
-  let auth = Just (TokenAuthorization (Config.clientId c) (Config.clientSecret c))
-
-  res <-
+  TokenResponse {access_token} <-
     Spotify.makeTokenRequest
-      auth
+      (Just (TokenAuthorization clientId clientSecret))
       TokenRequest
         { grant_type = RefreshTokenGrantType
-        , refresh_token = Just (Config.refreshToken c)
+        , refresh_token = Just refreshToken
         , code = Nothing
         , redirect_uri = Nothing
         }
 
-  Config.writeConfig
-    ConfigFile
-    (UserConfig (Config.clientId c) (Config.clientSecret c) (Config.refreshToken c) (access_token res))
+  Config.writeConfig ConfigFile (UserConfig clientId clientSecret refreshToken access_token)
 
 withRefresh :: Program () -> Program ()
 withRefresh prog = do
@@ -164,9 +160,9 @@ authorize = do
 
   chan <- Chan.newChan
 
-  rec <- race (Chan.readChan chan) (CallbackServer.runServer chan env)
+  code <- race (Chan.readChan chan) (CallbackServer.runServer chan env)
 
-  userCode <- case rec of
+  userCode <- case code of
     Left co -> pure co
     Right _ -> Error.throwError (UnexpectedError "Server died before receiving code from channel.")
 
