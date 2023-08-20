@@ -6,6 +6,7 @@ module Spotify.Effect.Spotify.Servant (
   routes,
   authorizeApi,
   scopeFromList,
+  trackSearch,
   ResponseType (..),
   AccountRoutes (..),
   TokenGrantType (..),
@@ -16,6 +17,11 @@ module Spotify.Effect.Spotify.Servant (
   Authorization (..),
   PlayRequest (..),
   Scope (..),
+  SearchResponse (..),
+  Artist (..),
+  Track (..),
+  Tracks (..),
+  SearchParams (..),
 )
 where
 
@@ -81,12 +87,77 @@ data PlayRequest = PlayRequest
 instance ToJSON PlayRequest
 instance FromJSON PlayRequest
 
+data Artist = Artist
+  { name :: Text
+  , uri :: Text
+  }
+  deriving stock (Generic, Show)
+
+instance ToJSON Artist
+instance FromJSON Artist
+
+data Track = Track
+  { name :: Text
+  , uri :: Text
+  , artists :: [Artist]
+  }
+  deriving stock (Generic, Show)
+
+instance ToJSON Track
+instance FromJSON Track
+
+data Tracks = Tracks
+  { href :: Text
+  , limit :: Int
+  , next :: Maybe Text
+  , previous :: Maybe Text
+  , offset :: Int
+  , total :: Int
+  , items :: [Track]
+  }
+  deriving stock (Generic, Show)
+
+instance ToJSON Tracks
+instance FromJSON Tracks
+
+newtype SearchResponse = SearchResponse
+  {tracks :: Tracks}
+  deriving stock (Generic, Show)
+
+instance ToJSON SearchResponse
+instance FromJSON SearchResponse
+
+type Search =
+  "search"
+    :> AuthorizedRequest
+    :> QueryParam' '[Required, Strict] "q" Text
+    :> QueryParam' '[Required, Strict] "type" Text
+    :> QueryParam "market" Text
+    :> QueryParam "limit" Int
+    :> QueryParam "offset" Int
+    :> QueryParam "include_external" Text
+    :> Get '[JSON] SearchResponse
+
+data SearchParams = SearchParams
+  { q :: Text
+  , type_ :: Text
+  , market :: Maybe Text
+  , limit :: Maybe Int
+  , offset :: Maybe Int
+  , include_external :: Maybe Text
+  }
+  deriving stock (Show)
+
+trackSearch :: Text -> SearchParams
+trackSearch query = SearchParams query "track" Nothing (Just 5) Nothing Nothing
+
 data Routes route = Routes
   { play :: route :- "me" :> "player" :> "play" :> ReqBody '[JSON] PlayRequest :> AuthorizedRequest :> PutNoContent
   , pause :: route :- "me" :> "player" :> "pause" :> AuthorizedRequest :> PutNoContent
-  , next :: route :- "me" :> "player" :> "next" :> AuthorizedRequest :> PostNoContent
+  , next_ :: route :- "me" :> "player" :> "next" :> AuthorizedRequest :> PostNoContent
   , prev :: route :- "me" :> "player" :> "previous" :> AuthorizedRequest :> PostNoContent
   , seek :: route :- "me" :> "player" :> "seek" :> QueryParam' '[Required, Strict] "position_ms" Int :> AuthorizedRequest :> PutNoContent
+  , search :: route :- Search
   }
   deriving stock (Generic)
 

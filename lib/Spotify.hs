@@ -1,9 +1,13 @@
 module Spotify (main) where
 
 import Control.Monad (unless)
+import Data.Foldable (forM_)
 import Data.Function ((&))
+import Data.Functor (void)
+import Data.List (find)
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Text.Read (decimal)
 import Effectful (runEff)
 import Effectful.Concurrent
 import Effectful.Concurrent.Async (race)
@@ -15,7 +19,6 @@ import Servant.Client (showBaseUrl)
 import Servant.Links
 import Web.HttpApiData
 
-import Data.Functor (void)
 import Spotify.AppEnv
 import Spotify.CLI (Command (..))
 import Spotify.CLI qualified
@@ -81,14 +84,14 @@ withAuth prog = do
   tok <- Config.accessToken <$> Config.readConfig ConfigFile
   prog (Authorization tok)
 
-playProg :: Program ()
-playProg = withRefresh $ withAuth $ \auth ->
+playProg :: Maybe [Text] -> Program ()
+playProg uris = withRefresh $ withAuth $ \auth ->
   void
     ( Spotify.makePlayRequest
         auth
         PlayRequest
           { context_uri = Nothing
-          , uris = Nothing
+          , uris = uris
           , offset = Nothing
           , position_ms = 0
           }
@@ -110,6 +113,33 @@ replayProg = withRefresh $ withAuth \auth ->
 seekProg :: Int -> Program ()
 seekProg s = withRefresh $ withAuth \auth ->
   void (Spotify.makeSeekRequest auth (s * 1000))
+
+promptTracks :: [Track] -> Program Track
+promptTracks ts = do
+  let choices = zip ts [1 :: Int ..]
+
+  forM_ choices \(Track {name = n, artists = as}, i) -> do
+    Console.writeLine (Text.pack (show i) <> ". " <> artistNames as <> " - " <> n)
+
+  choice <- Console.prompt "Choose track from the options above : "
+
+  choice' <- case decimal @Int choice of
+    Left _ -> Error.throwError (UnexpectedError "Invalid input.")
+    Right (i, _) -> pure i
+
+  case find ((== choice') . snd) choices of
+    Nothing -> Error.throwError (UnexpectedError "Choice out of bounds.")
+    Just (track, _) -> pure track
+  where
+    artistNames = Text.intercalate ", " . map go
+      where
+        go Artist {name = n} = n
+
+searchTracksProg :: Text -> Program ()
+searchTracksProg q = withRefresh $ withAuth \auth -> do
+  SearchResponse {tracks} <- Spotify.makeSearchRequest auth (trackSearch q)
+  Track {uri} <- promptTracks (items tracks)
+  playProg (pure (pure uri))
 
 authUrl :: String -> Text
 authUrl clientId =
@@ -177,12 +207,13 @@ runSpotifyEffect env prog =
 runCommand :: AppEnv -> Command -> IO ()
 runCommand env cmd = case cmd of
   Authorize -> runSpotifyEffect env authorize >>= handleErrors
-  Play -> runSpotifyEffect env playProg >>= handleErrors
+  Play -> runSpotifyEffect env (playProg Nothing) >>= handleErrors
   Pause -> runSpotifyEffect env pauseProg >>= handleErrors
   Next -> runSpotifyEffect env nextProg >>= handleErrors
   Prev -> runSpotifyEffect env prevProg >>= handleErrors
   Replay -> runSpotifyEffect env replayProg >>= handleErrors
   Seek s -> runSpotifyEffect env (seekProg s) >>= handleErrors
+  Search q -> runSpotifyEffect env (searchTracksProg q) >>= handleErrors
   where
     runEffs m = m & Log.runLogIO & runReader @AppEnv env & runEff
     handleErrors = \case

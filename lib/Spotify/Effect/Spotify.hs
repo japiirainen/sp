@@ -10,6 +10,7 @@ module Spotify.Effect.Spotify (
   makeNextRequest,
   makePrevRequest,
   makeSeekRequest,
+  makeSearchRequest,
   module Spotify.Effect.Spotify.Servant,
 )
 where
@@ -38,6 +39,7 @@ data Spotify :: Effect where
   MakeNextRequest :: Authorization -> Spotify m NoContent
   MakePrevRequest :: Authorization -> Spotify m NoContent
   MakeSeekRequest :: Authorization -> Int -> Spotify m NoContent
+  MakeSearchRequest :: Authorization -> SearchParams -> Spotify m SearchResponse
 
 makeEffect ''Spotify
 
@@ -64,25 +66,29 @@ runSpotifyServant = interpret $ \_ -> \case
     env <- asks accountsApiEnv
     let route = (accountRoutes // token) mauth tokReq
     adapt TokenRequestError (runClientM route env)
-  MakePlayRequest mauth playReq -> do
+  MakePlayRequest auth playReq -> do
     env <- asks mainApiEnv
-    let route = (routes // play) playReq mauth
+    let route = (routes // play) playReq auth
     adapt GenericApiError (runClientM route env)
-  MakePauseRequest mauth -> do
+  MakePauseRequest auth -> do
     env <- asks mainApiEnv
-    let route = (routes // pause) mauth
+    let route = (routes // pause) auth
     adapt GenericApiError (runClientM route env)
-  MakeNextRequest mauth -> do
+  MakeNextRequest auth -> do
     env <- asks mainApiEnv
-    let route = (routes // next) mauth
+    let route = (routes // next_) auth
     adapt GenericApiError (runClientM route env)
-  MakePrevRequest mauth -> do
+  MakePrevRequest auth -> do
     env <- asks mainApiEnv
-    let route = (routes // prev) mauth
+    let route = (routes // prev) auth
     adapt GenericApiError (runClientM route env)
-  MakeSeekRequest mauth seekMs -> do
+  MakeSeekRequest auth seekMs -> do
     env <- asks mainApiEnv
-    let route = (routes // seek) seekMs mauth
+    let route = (routes // seek) seekMs auth
+    adapt GenericApiError (runClientM route env)
+  MakeSearchRequest auth SearchParams {..} -> do
+    env <- asks mainApiEnv
+    let route = (routes // search) auth q type_ market limit offset include_external
     adapt GenericApiError (runClientM route env)
   where
     adapt errCon m =

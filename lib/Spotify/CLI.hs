@@ -1,5 +1,7 @@
 module Spotify.CLI where
 
+import Data.Text (Text)
+import Data.Text qualified as Text
 import Options.Applicative
 
 data Command
@@ -10,6 +12,7 @@ data Command
   | Prev
   | Replay
   | Seek Int
+  | Search Text
 
 instance Show Command where
   show = \case
@@ -20,6 +23,7 @@ instance Show Command where
     Prev -> "prev"
     Replay -> "replay"
     Seek s -> "seek " <> show s
+    Search q -> "search `" <> Text.unpack q <> "`"
 
 data Options = Options
   { debug :: Bool
@@ -39,6 +43,7 @@ parser =
           <> command "prev" (info (pure Prev) (progDesc "Skips to previous track in the queue."))
           <> command "replay" (info (pure Replay) (progDesc "Replay current song from the beginning."))
           <> command "seek" (info (Seek <$> argument (auto @Int) (help "Where to seek in seconds.")) (progDesc "Seeks to the given position in the currently playing track."))
+          <> command "search" (info (Search <$> strArgument (help "Search query.")) (progDesc "Search for tracks."))
       )
 
 parserInfo :: ParserInfo Options
