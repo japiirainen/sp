@@ -4,6 +4,7 @@ module Spotify.Effect.FileSystem (
   readFile,
   readConfigFile,
   writeConfigFile,
+  getConfigHome,
   runFileSystemIO,
   FileSystem,
 ) where
@@ -31,6 +32,7 @@ data FileSystem :: Effect where
   ReadFile :: FilePath -> FileSystem m Text
   ReadConfigFile :: FilePath -> FileSystem m Text
   WriteConfigFile :: FilePath -> ByteString -> FileSystem m ()
+  GetConfigHome :: FileSystem m FilePath
 
 makeEffect ''FileSystem
 
@@ -42,6 +44,7 @@ runFileSystemIO = interpret $ \_ -> \case
       Nothing -> throwError ConfigNotFound
       Just c -> pure $ toStrict $ decodeUtf8 c
   WriteConfigFile path content -> liftIO $ XDG.writeConfigFile path content
+  GetConfigHome -> adapt XDG.getConfigHome
   where
     adapt m =
       liftIO m `catch` \(e :: IOException) -> do

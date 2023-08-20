@@ -10,7 +10,6 @@ module Spotify.Effect.Config (
 
 import Data.ByteString.Lazy (fromStrict)
 import Data.Text (Text)
-
 import Data.Text qualified as Text
 import Data.Text.Encoding (encodeUtf8)
 import Dhall qualified
@@ -21,10 +20,11 @@ import Effectful.Dispatch.Dynamic
 import Effectful.TH
 import Prettyprinter (defaultLayoutOptions, layoutPretty)
 import Prettyprinter.Render.Text (renderStrict)
+
+import Spotify.Effect.FileSystem (FileSystem)
+import Spotify.Effect.FileSystem qualified as FS
 import Spotify.Effect.Log (Log)
 import Spotify.Effect.Log qualified as Log
-
-import Spotify.Effect.FileSystem
 import Spotify.UserConfig
 
 data Config :: Effect where
@@ -37,14 +37,15 @@ makeEffect ''Config
 runConfigIO :: (IOE :> es, FileSystem :> es, Log :> es) => Eff (Config : es) a -> Eff es a
 runConfigIO = interpret $ \_ -> \case
   ReadConfig path -> do
-    fileContents <- readConfigFile ("spotify/" <> show path)
+    fileContents <- FS.readConfigFile ("spotify/" <> show path)
     liftIO $ Dhall.input Dhall.auto fileContents
-  ReadToken path -> readConfigFile ("spotify/" <> show path)
+  ReadToken path -> FS.readConfigFile ("spotify/" <> show path)
   WriteConfig path config -> do
     let expr = Dhall.embed Dhall.inject config
     let doc = Dhall.Pretty.prettyCharacterSet Unicode expr
     let config' = renderStrict (layoutPretty defaultLayoutOptions doc)
     let fp = "spotify/" <> show path
     Log.debug ("Writing config with contents : " <> config')
-    writeConfigFile fp (fromStrict (encodeUtf8 config'))
-    Log.info ("Config file upated at : " <> Text.pack fp)
+    FS.writeConfigFile fp (fromStrict (encodeUtf8 config'))
+    dh <- FS.getConfigHome
+    Log.info ("Config file upated at : " <> (Text.pack dh <> Text.pack fp))
