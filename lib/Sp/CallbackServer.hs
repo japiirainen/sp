@@ -1,4 +1,4 @@
-module Spotify.CallbackServer (runServer) where
+module Sp.CallbackServer (runServer) where
 
 import Control.Monad.Except qualified as T
 import Data.Function ((&))
@@ -20,12 +20,12 @@ import Servant
 import Servant.API.Generic
 import Servant.Server.Generic
 
-import Spotify.AppEnv (AppEnv)
-import Spotify.Effect.Config qualified as Config
-import Spotify.Effect.FileSystem qualified as FileSystem
-import Spotify.Effect.Log qualified as Log
-import Spotify.Errors (SpotifyError)
-import Spotify.Types (CBServer)
+import Sp.AppEnv (AppEnv)
+import Sp.Effect.Config qualified as Config
+import Sp.Effect.FileSystem qualified as FileSystem
+import Sp.Effect.Log qualified as Log
+import Sp.Errors (SpError)
+import Sp.Types (CBServer)
 
 newtype Routes route = Routes
   { callback ::
@@ -49,7 +49,7 @@ server chan =
 effToHandler ::
   forall (a :: Type).
   () =>
-  Eff '[IOE] (Either SpotifyError (Either ServerError a)) ->
+  Eff '[IOE] (Either SpError (Either ServerError a)) ->
   Handler a
 effToHandler computation = do
   v <- liftIO . runEff $! computation
@@ -67,7 +67,7 @@ nt env prog =
     & Log.runLogIO
     & runReader @AppEnv env
     & runErrorNoCallStack @ServerError
-    & runErrorNoCallStack @SpotifyError
+    & runErrorNoCallStack @SpError
     & runConcurrent
     & effToHandler
 

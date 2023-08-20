@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Spotify.Effect.FileSystem (
+module Sp.Effect.FileSystem (
   readFile,
   readConfigFile,
   writeConfigFile,
@@ -11,6 +11,7 @@ module Spotify.Effect.FileSystem (
 
 import Control.Exception (IOException)
 import Control.Monad.Catch (catch)
+import Data.ByteString.Lazy (ByteString)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.IO qualified as TIO
@@ -23,10 +24,9 @@ import Effectful.TH (makeEffect)
 import System.XDG qualified as XDG
 import Prelude hiding (readFile)
 
-import Data.ByteString.Lazy (ByteString)
-import Spotify.Effect.Log (Log)
-import Spotify.Effect.Log qualified as Log
-import Spotify.Errors (SpotifyError (..))
+import Sp.Effect.Log (Log)
+import Sp.Effect.Log qualified as Log
+import Sp.Errors (SpError (..))
 
 data FileSystem :: Effect where
   ReadFile :: FilePath -> FileSystem m Text
@@ -36,7 +36,7 @@ data FileSystem :: Effect where
 
 makeEffect ''FileSystem
 
-runFileSystemIO :: (IOE :> es, Log :> es, Error SpotifyError :> es) => Eff (FileSystem : es) a -> Eff es a
+runFileSystemIO :: (IOE :> es, Log :> es, Error SpError :> es) => Eff (FileSystem : es) a -> Eff es a
 runFileSystemIO = interpret $ \_ -> \case
   ReadFile path -> adapt (TIO.readFile path)
   ReadConfigFile path ->

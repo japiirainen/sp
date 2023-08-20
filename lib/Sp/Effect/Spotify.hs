@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedLists #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Spotify.Effect.Spotify (
+module Sp.Effect.Spotify (
   runSpotifyServant,
   Spotify (..),
   makeTokenRequest,
@@ -11,7 +11,7 @@ module Spotify.Effect.Spotify (
   makePrevRequest,
   makeSeekRequest,
   makeSearchRequest,
-  module Spotify.Effect.Spotify.Servant,
+  module Sp.Effect.Spotify.Servant,
 )
 where
 
@@ -26,11 +26,11 @@ import Network.HTTP.Types (Status (..))
 import Servant (NoContent)
 import Servant.Client (ClientError (..), ResponseF (..), runClientM, (//))
 
-import Spotify.AppEnv
-import Spotify.Effect.Log (Log)
-import Spotify.Effect.Log qualified as Log
-import Spotify.Effect.Spotify.Servant
-import Spotify.Errors
+import Sp.AppEnv
+import Sp.Effect.Log (Log)
+import Sp.Effect.Log qualified as Log
+import Sp.Effect.Spotify.Servant
+import Sp.Errors
 
 data Spotify :: Effect where
   MakeTokenRequest :: Maybe TokenAuthorization -> TokenRequest -> Spotify m TokenResponse
@@ -60,7 +60,7 @@ ppClientError = \case
         <> "\n         }"
 
 runSpotifyServant ::
-  (IOE :> es, Error SpotifyError :> es, Reader AppEnv :> es, Log :> es) => Eff (Spotify : es) a -> Eff es a
+  (IOE :> es, Error SpError :> es, Reader AppEnv :> es, Log :> es) => Eff (Spotify : es) a -> Eff es a
 runSpotifyServant = interpret $ \_ -> \case
   MakeTokenRequest mauth tokReq -> do
     env <- asks accountsApiEnv

@@ -1,4 +1,4 @@
-module Spotify.Effect.Spotify.Servant (
+module Sp.Effect.Spotify.Servant (
   accountRoutes,
   accountsEnv,
   accountsBaseUrl,
@@ -39,7 +39,7 @@ import Servant.API.Generic
 import Servant.Client
 import Web.FormUrlEncoded (ToForm (..))
 
-import Spotify.Effect.Spotify.TokenResponse
+import Sp.Effect.Spotify.TokenResponse
 
 type TokenRoute =
   "token"

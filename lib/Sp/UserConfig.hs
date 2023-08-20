@@ -1,4 +1,4 @@
-module Spotify.UserConfig (
+module Sp.UserConfig (
   UserConfig (..),
   ConfigFile (..),
 ) where

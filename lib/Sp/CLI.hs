@@ -1,4 +1,4 @@
-module Spotify.CLI where
+module Sp.CLI where
 
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -36,7 +36,7 @@ parser =
   Options
     <$> switch (long "debug" <> short 'd' <> help "Weather to print debug information or not")
     <*> subparser
-      ( command "authorize" (info (pure Authorize) (progDesc "Run spotify authorization flow"))
+      ( command "authorize" (info (pure Authorize) (progDesc "Run `sp` authorization flow"))
           <> command "play" (info (pure Play) (progDesc "Play current song"))
           <> command "pause" (info (pure Pause) (progDesc "Pause current song"))
           <> command "next" (info (pure Next) (progDesc "Skips to next track in the queue."))

@@ -1,4 +1,4 @@
-module Spotify.Types where
+module Sp.Types where
 
 import Data.Kind (Type)
 import Effectful (Eff, IOE)
@@ -7,14 +7,14 @@ import Effectful.Reader.Static (Reader)
 import Servant (ServerError)
 
 import Effectful.Concurrent (Concurrent)
-import Spotify.AppEnv (AppEnv)
-import Spotify.Effect.Browser (Browser)
-import Spotify.Effect.Config (Config)
-import Spotify.Effect.Console (Console)
-import Spotify.Effect.FileSystem (FileSystem)
-import Spotify.Effect.Log (Log)
-import Spotify.Effect.Spotify (Spotify)
-import Spotify.Errors (SpotifyError)
+import Sp.AppEnv (AppEnv)
+import Sp.Effect.Browser (Browser)
+import Sp.Effect.Config (Config)
+import Sp.Effect.Console (Console)
+import Sp.Effect.FileSystem (FileSystem)
+import Sp.Effect.Log (Log)
+import Sp.Effect.Spotify (Spotify)
+import Sp.Errors (SpError)
 
 type Program :: Type -> Type
 type Program =
@@ -26,7 +26,7 @@ type Program =
      , Log
      , Console
      , Reader AppEnv
-     , Error SpotifyError
+     , Error SpError
      , Concurrent
      , IOE
      ]
@@ -39,7 +39,7 @@ type CBServer =
      , Log
      , Reader AppEnv
      , Error ServerError
-     , Error SpotifyError
+     , Error SpError
      , Concurrent
      , IOE
      ]

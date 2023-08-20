@@ -1,9 +1,9 @@
-module Spotify.Errors (SpotifyError (..)) where
+module Sp.Errors (SpError (..)) where
 
 import Data.Text (Text)
 import Data.Text qualified as Text
 
-data SpotifyError
+data SpError
   = UnexpectedError Text
   | ConfigNotFound
   | TokenRequestError
@@ -11,11 +11,11 @@ data SpotifyError
   | AuthorizationError
   | InvalidTokenError
 
-instance Show SpotifyError where
+instance Show SpError where
   show = \case
     UnexpectedError msg -> "Unexpected error: " <> Text.unpack msg
     ConfigNotFound -> "Necessary configuration file not found."
     TokenRequestError -> "Token request failed. Try to run authorize flow."
-    GenericApiError -> "Something bad happened. Please open an issue at https://github.com/japiirainen/spotify"
+    GenericApiError -> "Something bad happened. Please open an issue at https://github.com/japiirainen/sp"
     AuthorizationError -> "Error during the authorization flow."
     InvalidTokenError -> "Invalid access/refresh token."

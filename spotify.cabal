@@ -1,5 +1,5 @@
 cabal-version:      2.4
-name:               spotify
+name:               sp
 version:            0.1.0.0
 license:            MIT
 copyright:          2022 Joona Piirainen
@@ -71,9 +71,11 @@ library
     , base64-bytestring
     , bytestring
     , dhall
+    , directory
     , effectful
     , effectful-th
     , exceptions
+    , extra
     , http-api-data
     , http-client-tls
     , http-types
@@ -89,31 +91,31 @@ library
     , warp
     , xdg-basedir-compliant
 
-  other-modules:   Paths_spotify
+  other-modules:   Paths_sp
   hs-source-dirs:  lib
   exposed-modules:
-    Spotify
-    Spotify.AppEnv
-    Spotify.CallbackServer
-    Spotify.CLI
-    Spotify.Effect.Browser
-    Spotify.Effect.Config
-    Spotify.Effect.Console
-    Spotify.Effect.FileSystem
-    Spotify.Effect.Log
-    Spotify.Effect.Spotify
-    Spotify.Effect.Spotify.Servant
-    Spotify.Effect.Spotify.TokenResponse
-    Spotify.Errors
-    Spotify.Types
-    Spotify.UserConfig
+    Sp
+    Sp.AppEnv
+    Sp.CallbackServer
+    Sp.CLI
+    Sp.Effect.Browser
+    Sp.Effect.Config
+    Sp.Effect.Console
+    Sp.Effect.FileSystem
+    Sp.Effect.Log
+    Sp.Effect.Spotify
+    Sp.Effect.Spotify.Servant
+    Sp.Effect.Spotify.TokenResponse
+    Sp.Errors
+    Sp.Types
+    Sp.UserConfig
 
-executable spotify
+executable sp
   import:         shared
   build-depends:
     , base       >=4.13.0.0 && <4.18.0.0.0
     , effectful
-    , spotify
+    , sp
 
   hs-source-dirs: src
   main-is:        Main.hs

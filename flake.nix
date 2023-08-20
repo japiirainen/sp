@@ -1,5 +1,5 @@
 {
-  description = "A simple CLI for interacting with spotify.";
+  description = "`sp` is a simple CLI for interacting with spotify.";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
@@ -48,11 +48,11 @@
           };
         };
 
-        packages.default = self'.packages.spotify;
-        apps.default = self'.apps.spotify;
+        packages.default = self'.packages.sp;
+        apps.default = self'.apps.sp;
 
         devShells.default = pkgs.mkShell {
-          name = "spotify";
+          name = "sp";
           inputsFrom = [
             config.haskellProjects.default.outputs.devShell
             config.treefmt.build.devShell

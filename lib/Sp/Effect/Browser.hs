@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Spotify.Effect.Browser (
+module Sp.Effect.Browser (
   Browser,
   open,
   runBrowserIO,
@@ -12,8 +12,8 @@ import Effectful.Dispatch.Dynamic
 import Effectful.TH
 import Web.Browser (openBrowser)
 
-import Spotify.Effect.Log (Log)
-import Spotify.Effect.Log qualified as Log
+import Sp.Effect.Log (Log)
+import Sp.Effect.Log qualified as Log
 
 data Browser :: Effect where
   Open :: String -> Browser m Bool

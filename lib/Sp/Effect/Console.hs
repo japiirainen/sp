@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Spotify.Effect.Console (
+module Sp.Effect.Console (
   Console,
   readLine,
   writeLine,

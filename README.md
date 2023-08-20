@@ -1,10 +1,10 @@
-spotify
+sp
 
 ## Table of contents
 
 - [Table of contents](#table-of-contents)
 - [A spotify CLI](#a-spotify-cli)
-- [Usage of `spotify`](#usage-of-spotify)
+- [Usage of `sp`](#usage-of-sp)
   - [Authorization](#authorization)
   - [Basic commands](#basic-commands)
 - [Development](#development)
@@ -13,7 +13,7 @@ spotify
 
 ## A spotify CLI
 
-## Usage of `spotify`
+## Usage of `sp`
 
 ### Authorization
 
@@ -21,12 +21,12 @@ spotify
 
 ## Development
 
-You can develop `spotify` with `cabal`.
+You can develop `sp` with `cabal`.
 
 ```sh
 cabal build all
 
-cabal run spotify
+cabal run sp
 ```
 
 ### Nix support
@@ -56,4 +56,4 @@ nix-shell
 - Run `nix flake update` to update all flake inputs.
 - Run `just fmt` to run formatters.
 - Run `just docs` to start  local hoogle server.
-- Run the application without installing: `nix run github:japiirainen/spotify` (or `nix run .` from checkout)
+- Run the application without installing: `nix run github:japiirainen/sp` (or `nix run .` from checkout)

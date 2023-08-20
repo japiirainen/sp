@@ -1,4 +1,4 @@
-module Spotify.Effect.Spotify.TokenResponse (TokenResponse (..)) where
+module Sp.Effect.Spotify.TokenResponse (TokenResponse (..)) where
 
 import Data.Aeson (FromJSON)
 import Data.Text (Text)

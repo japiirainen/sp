@@ -1,4 +1,4 @@
-module Spotify.AppEnv (AppEnv (..), LogLevel (..)) where
+module Sp.AppEnv (AppEnv (..), LogLevel (..)) where
 
 import Servant.Client (ClientEnv)
 

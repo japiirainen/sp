@@ -1,4 +1,4 @@
-module Spotify (main) where
+module Sp (main) where
 
 import Control.Monad (unless)
 import Data.Foldable (forM_)
@@ -19,21 +19,21 @@ import Servant.Client (showBaseUrl)
 import Servant.Links
 import Web.HttpApiData
 
-import Spotify.AppEnv
-import Spotify.CLI (Command (..))
-import Spotify.CLI qualified
-import Spotify.CallbackServer qualified as CallbackServer
-import Spotify.Effect.Browser qualified as Browser
-import Spotify.Effect.Config qualified as Config
-import Spotify.Effect.Console qualified as Console
-import Spotify.Effect.FileSystem qualified as FileSystem
-import Spotify.Effect.Log qualified as Log
-import Spotify.Effect.Spotify qualified as Spotify
-import Spotify.Effect.Spotify.Servant
-import Spotify.Effect.Spotify.TokenResponse qualified as TokenResponse
-import Spotify.Errors
-import Spotify.Types
-import Spotify.UserConfig as Config
+import Sp.AppEnv
+import Sp.CLI (Command (..))
+import Sp.CLI qualified
+import Sp.CallbackServer qualified as CallbackServer
+import Sp.Effect.Browser qualified as Browser
+import Sp.Effect.Config qualified as Config
+import Sp.Effect.Console qualified as Console
+import Sp.Effect.FileSystem qualified as FileSystem
+import Sp.Effect.Log qualified as Log
+import Sp.Effect.Spotify qualified as Spotify
+import Sp.Effect.Spotify.Servant
+import Sp.Effect.Spotify.TokenResponse qualified as TokenResponse
+import Sp.Errors
+import Sp.Types
+import Sp.UserConfig as Config
 
 scope :: Scope
 scope =
@@ -71,7 +71,7 @@ refresh = do
 
 withRefresh :: Program () -> Program ()
 withRefresh prog = do
-  Error.catchError @SpotifyError
+  Error.catchError @SpError
     prog
     (\_ e -> case e of InvalidTokenError -> refresh >> prog; _ -> Error.throwError e)
 
@@ -186,7 +186,7 @@ authorize = do
 
   Log.info "Authorization flow was succesful!"
 
-runSpotifyEffect :: AppEnv -> Program () -> IO (Either SpotifyError ())
+runSpotifyEffect :: AppEnv -> Program () -> IO (Either SpError ())
 runSpotifyEffect env prog =
   prog
     & Browser.runBrowserIO
@@ -196,7 +196,7 @@ runSpotifyEffect env prog =
     & Log.runLogIO
     & Console.runConsole
     & runReader @AppEnv env
-    & runErrorNoCallStack @SpotifyError
+    & runErrorNoCallStack @SpError
     & runConcurrent
     & runEff
 
@@ -218,7 +218,7 @@ runCommand env cmd = case cmd of
 
 main :: IO ()
 main = do
-  opts <- Spotify.CLI.getOpts
-  let logLevel = if Spotify.CLI.debug opts then LevelDebug else LevelInfo
+  opts <- Sp.CLI.getOpts
+  let logLevel = if Sp.CLI.debug opts then LevelDebug else LevelInfo
   env <- AppEnv <$> accountsEnv <*> mainEnv <*> pure logLevel
-  runCommand env (Spotify.CLI.userCommand opts)
+  runCommand env (Sp.CLI.userCommand opts)

@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Spotify.Effect.Log (
+module Sp.Effect.Log (
   Log,
   info,
   debug,
@@ -19,7 +19,7 @@ import Effectful.Reader.Static (Reader, asks)
 import Effectful.TH
 import Prelude hiding (error)
 
-import Spotify.AppEnv
+import Sp.AppEnv
 
 data Log :: Effect where
   Info :: Text -> Log m ()

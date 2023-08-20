@@ -1,6 +1,6 @@
 module Main where
 
-import Spotify qualified
+import Sp qualified
 
 main :: IO ()
-main = Spotify.main
+main = Sp.main
