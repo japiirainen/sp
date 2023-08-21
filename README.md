@@ -118,7 +118,15 @@ sp seek 60
 Search for tracks.
 
 ```bash
-sp search 'Ehtaa tavaraa'
+sp track 'Ehtaa tavaraa'
+```
+
+#### `album`
+
+Search for tracks.
+
+```bash
+sp album 'After Hours'
 ```
 
 ## Development
