@@ -13,6 +13,7 @@ data Command
   | Replay
   | Seek Int
   | SearchTrack Text
+  | SearchAlbum Text
 
 instance Show Command where
   show = \case
@@ -24,6 +25,7 @@ instance Show Command where
     Replay -> "replay"
     Seek s -> "seek " <> show s
     SearchTrack q -> "search `" <> Text.unpack q <> "`"
+    SearchAlbum q -> "search `" <> Text.unpack q <> "`"
 
 data Options = Options
   { debug :: Bool
@@ -44,6 +46,7 @@ parser =
           <> command "replay" (info (pure Replay) (progDesc "Replay current song from the beginning."))
           <> command "seek" (info (Seek <$> argument (auto @Int) (help "Where to seek in seconds.")) (progDesc "Seeks to the given position in the currently playing track."))
           <> command "track" (info (SearchTrack <$> strArgument (help "Search query.")) (progDesc "Search for tracks."))
+          <> command "album" (info (SearchAlbum <$> strArgument (help "Search album.")) (progDesc "Search for an album."))
       )
 
 parserInfo :: ParserInfo Options

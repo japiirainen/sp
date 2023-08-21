@@ -7,6 +7,7 @@ module Sp.Effect.Spotify.Servant (
   authorizeApi,
   scopeFromList,
   trackSearch,
+  albumSearch,
   ResponseType (..),
   AccountRoutes (..),
   TokenGrantType (..),
@@ -17,11 +18,14 @@ module Sp.Effect.Spotify.Servant (
   Authorization (..),
   PlayRequest (..),
   Scope (..),
-  SearchResponse (..),
+  SearchAlbumsResponse (..),
+  SearchTracksResponse (..),
   Artist (..),
   Track (..),
   Tracks (..),
   SearchParams (..),
+  Albums (..),
+  Album (..),
 )
 where
 
@@ -120,14 +124,47 @@ data Tracks = Tracks
 instance ToJSON Tracks
 instance FromJSON Tracks
 
-newtype SearchResponse = SearchResponse
-  {tracks :: Tracks}
+data Album = Album
+  { name :: Text
+  , uri :: Text
+  , artists :: [Artist]
+  }
   deriving stock (Generic, Show)
 
-instance ToJSON SearchResponse
-instance FromJSON SearchResponse
+instance ToJSON Album
+instance FromJSON Album
 
-type Search =
+data Albums = Albums
+  { href :: Text
+  , limit :: Int
+  , next :: Maybe Text
+  , previous :: Maybe Text
+  , offset :: Int
+  , total :: Int
+  , items :: [Album]
+  }
+  deriving stock (Generic, Show)
+
+instance ToJSON Albums
+instance FromJSON Albums
+
+newtype SearchTracksResponse = SearchTracksResponse
+  { tracks :: Tracks
+  }
+  deriving stock (Generic, Show)
+
+instance ToJSON SearchTracksResponse
+instance FromJSON SearchTracksResponse
+
+newtype SearchAlbumsResponse = SearchAlbumsResponse
+  { albums :: Albums
+  }
+  deriving stock (Generic, Show)
+
+instance ToJSON SearchAlbumsResponse
+instance FromJSON SearchAlbumsResponse
+
+type Search ret =
   "search"
     :> AuthorizedRequest
     :> QueryParam' '[Required, Strict] "q" Text
@@ -136,7 +173,7 @@ type Search =
     :> QueryParam "limit" Int
     :> QueryParam "offset" Int
     :> QueryParam "include_external" Text
-    :> Get '[JSON] SearchResponse
+    :> Get '[JSON] ret
 
 data SearchParams = SearchParams
   { q :: Text
@@ -151,13 +188,17 @@ data SearchParams = SearchParams
 trackSearch :: Text -> SearchParams
 trackSearch query = SearchParams query "track" Nothing (Just 5) Nothing Nothing
 
+albumSearch :: Text -> SearchParams
+albumSearch query = SearchParams query "album" Nothing (Just 5) Nothing Nothing
+
 data Routes route = Routes
   { play :: route :- "me" :> "player" :> "play" :> ReqBody '[JSON] PlayRequest :> AuthorizedRequest :> PutNoContent
   , pause :: route :- "me" :> "player" :> "pause" :> AuthorizedRequest :> PutNoContent
   , next_ :: route :- "me" :> "player" :> "next" :> AuthorizedRequest :> PostNoContent
   , prev :: route :- "me" :> "player" :> "previous" :> AuthorizedRequest :> PostNoContent
   , seek :: route :- "me" :> "player" :> "seek" :> QueryParam' '[Required, Strict] "position_ms" Int :> AuthorizedRequest :> PutNoContent
-  , search :: route :- Search
+  , searchTracks :: route :- Search SearchTracksResponse
+  , searchAlbums :: route :- Search SearchAlbumsResponse
   }
   deriving stock (Generic)
 

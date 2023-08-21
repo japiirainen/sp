@@ -10,7 +10,8 @@ module Sp.Effect.Spotify (
   makeNextRequest,
   makePrevRequest,
   makeSeekRequest,
-  makeSearchRequest,
+  makeSearchTracksRequest,
+  makeSearchAlbumsRequest,
   module Sp.Effect.Spotify.Servant,
 )
 where
@@ -39,7 +40,8 @@ data Spotify :: Effect where
   MakeNextRequest :: Authorization -> Spotify m NoContent
   MakePrevRequest :: Authorization -> Spotify m NoContent
   MakeSeekRequest :: Authorization -> Int -> Spotify m NoContent
-  MakeSearchRequest :: Authorization -> SearchParams -> Spotify m SearchResponse
+  MakeSearchTracksRequest :: Authorization -> SearchParams -> Spotify m SearchTracksResponse
+  MakeSearchAlbumsRequest :: Authorization -> SearchParams -> Spotify m SearchAlbumsResponse
 
 makeEffect ''Spotify
 
@@ -86,9 +88,13 @@ runSpotifyServant = interpret $ \_ -> \case
     env <- asks mainApiEnv
     let route = (routes // seek) seekMs auth
     adapt GenericApiError (runClientM route env)
-  MakeSearchRequest auth SearchParams {..} -> do
+  MakeSearchTracksRequest auth SearchParams {..} -> do
     env <- asks mainApiEnv
-    let route = (routes // search) auth q type_ market limit offset include_external
+    let route = (routes // searchTracks) auth q type_ market limit offset include_external
+    adapt GenericApiError (runClientM route env)
+  MakeSearchAlbumsRequest auth SearchParams {..} -> do
+    env <- asks mainApiEnv
+    let route = (routes // searchAlbums) auth q type_ market limit offset include_external
     adapt GenericApiError (runClientM route env)
   where
     adapt errCon m =
