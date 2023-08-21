@@ -17,6 +17,7 @@ sp
     - [`replay`](#replay)
     - [`seek`](#seek)
     - [`track`](#track)
+    - [`album`](#track)
 - [Development](#development)
   - [Nix support](#nix-support)
   - [Tips](#tips)
@@ -123,7 +124,7 @@ sp track 'Ehtaa tavaraa'
 
 #### `album`
 
-Search for tracks.
+Search for albums.
 
 ```bash
 sp album 'After Hours'
