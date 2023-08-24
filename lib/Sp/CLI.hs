@@ -44,7 +44,7 @@ parser =
           <> command "next" (info (pure Next) (progDesc "Skips to next track in the queue."))
           <> command "prev" (info (pure Prev) (progDesc "Skips to previous track in the queue."))
           <> command "replay" (info (pure Replay) (progDesc "Replay current song from the beginning."))
-          <> command "seek" (info (Seek <$> argument (auto @Int) (help "Where to seek in seconds.")) (progDesc "Seeks to the given position in the currently playing track."))
+          <> command "seek" (info (Seek <$> argument (auto @Int) (help "Where to seek in seconds.")) (progDesc "Seeks to the given position."))
           <> command "track" (info (SearchTrack <$> strArgument (help "Search query.")) (progDesc "Search for tracks."))
           <> command "album" (info (SearchAlbum <$> strArgument (help "Search album.")) (progDesc "Search for an album."))
       )
