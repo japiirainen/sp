@@ -53,7 +53,7 @@ parserInfo :: ParserInfo Options
 parserInfo =
   info
     (helper <*> parser)
-    (progDesc "`sp` is a simple CLI for interacting with spotify .")
+    (progDesc "`sp` is a CLI for simple interactions with spotify.")
 
 getOpts :: IO Options
 getOpts = execParser parserInfo
