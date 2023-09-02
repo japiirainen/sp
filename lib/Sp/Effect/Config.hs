@@ -63,4 +63,6 @@ runConfigIO = interpret $ \_ -> \case
 
     FS.writeConfigFile fp (fromStrict (encodeUtf8 config'))
 
-    Log.info ("Config file upated at : " <> (Text.pack dh <> Text.pack fp))
+    let msg = "Config file updated at : " <> (Text.pack dh <> Text.pack fp)
+
+    Log.info msg
